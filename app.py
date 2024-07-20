@@ -3,84 +3,165 @@ Research Data Lifecycle Visualization
 Author: Adam Vials Moore
 Date: 19 July 2024
 
-This module sets up the database schema and Flask API for serving the research data lifecycle stages and tools.
+This module sets up the Flask API for serving the research data lifecycle stages,
+connections, substages, and tools from a SQLite database.
+
+The application can be run locally or deployed on Azure.
 """
 
-from flask import Flask, jsonify, send_from_directory
+import os
 import sqlite3
+import logging
+from flask import Flask, jsonify, send_from_directory
 
-app = Flask(__name__, static_folder='.')
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-def query_db(query, args=(), one=False):
+app = Flask(__name__, static_folder='build')
+
+# Use environment variable for database path
+DB_PATH = os.environ.get('DB_PATH', 'lifecycle.db')
+
+def query_db(query: str, args: tuple = (), one: bool = False) -> list:
     """
-    Query the database and return the results.
+    Execute a query on the database and return the results.
 
-    :param query: SQL query string
-    :param args: Arguments for the SQL query
-    :param one: Boolean indicating whether to fetch one result or all
-    :return: Query results
-    """
-    conn = sqlite3.connect('lifecycle.db')
-    cur = conn.cursor()
-    cur.execute(query, args)
-    rv = cur.fetchall()
-    conn.close()
-    return (rv[0] if rv else None) if one else rv
+    Args:
+        query (str): SQL query string to execute.
+        args (tuple): Arguments for the SQL query. Defaults to an empty tuple.
+        one (bool): If True, fetch one result; if False, fetch all. Defaults to False.
 
-@app.route('/')
-def serve_index():
-    """
-    Serve the index.html file.
+    Returns:
+        list: Query results as a list of tuples.
 
-    :return: index.html file
+    Raises:
+        sqlite3.Error: If there's an issue with the database connection or query execution.
     """
-    return send_from_directory('.', 'index.html')
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            cur = conn.cursor()
+            cur.execute(query, args)
+            rv = cur.fetchall()
+        return (rv[0] if rv else None) if one else rv
+    except sqlite3.Error as e:
+        logger.error(f"Database error: {e}")
+        raise
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path: str):
+    """
+    Serve the React app or static files.
+
+    Args:
+        path (str): Requested path.
+
+    Returns:
+        flask.Response: The requested file or the index.html for the React app.
+    """
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/api/lifecycle', methods=['GET'])
 def get_lifecycle():
     """
-    Get the lifecycle stages from the database.
+    Retrieve the lifecycle stages from the database.
 
-    :return: JSON response with lifecycle stages
+    Returns:
+        flask.Response: JSON response with lifecycle stages and descriptions.
     """
-    lifecycle = query_db('SELECT * FROM LifeCycle')
-    print(f"lifecycle: {lifecycle}")  # Debug information
-    return jsonify(lifecycle)
+    try:
+        lifecycle = query_db('SELECT stage, stagedesc FROM LifeCycle')
+        return jsonify([{'stage': row[0], 'name': row[0], 'stagedesc': row[1]} for row in lifecycle])
+    except sqlite3.Error as e:
+        logger.error(f"Error retrieving lifecycle data: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/connections', methods=['GET'])
 def get_connections():
     """
-    Get the connections between lifecycle stages from the database.
+    Retrieve the connections between lifecycle stages from the database.
 
-    :return: JSON response with connections
+    Returns:
+        flask.Response: JSON response with connections.
     """
-    connections = query_db('SELECT * FROM CycleConnects')
-    print(f"connections: {connections}")  # Debug information
-    return jsonify(connections)
+    try:
+        connections = query_db('SELECT start, end FROM CycleConnects')
+        return jsonify([{'from': row[0], 'to': row[1]} for row in connections])
+    except sqlite3.Error as e:
+        logger.error(f"Error retrieving connections data: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/substages/<stage>', methods=['GET'])
-def get_substages(stage):
+def get_substages(stage: str):
     """
-    Get the substages for a given stage from the database.
+    Retrieve the substages and exemplars for a given stage from the database.
 
-    :param stage: Lifecycle stage
-    :return: JSON response with substages
+    Args:
+        stage (str): Lifecycle stage.
+
+    Returns:
+        flask.Response: JSON response with substages and exemplars.
     """
-    substages = query_db('SELECT * FROM SubStage WHERE stage = ?', [stage])
-    print(f"substages for {stage}: {substages}")  # Debug information
-    return jsonify(substages)
+    try:
+        substages = query_db('SELECT substagename, substagedesc, exemplar FROM SubStage WHERE stage = ?', (stage,))
+        return jsonify([{
+            'name': row[0],
+            'description': row[1],
+            'exemplar': row[2]
+        } for row in substages])
+    except sqlite3.Error as e:
+        logger.error(f"Error retrieving substages data: {e}")
+        return jsonify({'error': str(e)}), 500
+
+
 
 @app.route('/api/tools/<stage>', methods=['GET'])
-def get_tools(stage):
+def get_tools(stage: str):
     """
-    Get the tools for a given stage from the database.
+    Retrieve the tools for a given stage from the database.
 
-    :param stage: Lifecycle stage
-    :return: JSON response with tools
+    Args:
+        stage (str): Lifecycle stage.
+
+    Returns:
+        flask.Response: JSON response with tools.
     """
-    tools = query_db('SELECT * FROM Tools WHERE stage = ?', [stage])
-    print(f"tools for {stage}: {tools}")  # Debug information
-    return jsonify(tools)
+    try:
+        tools = query_db('SELECT ToolName, ToolDesc, ToolLink, ToolProvider FROM Tools WHERE stage = ?', (stage,))
+        return jsonify([{'name': row[0], 'description': row[1], 'link': row[2], 'provider': row[3]} for row in tools])
+    except sqlite3.Error as e:
+        logger.error(f"Error retrieving tools data: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/substages/all', methods=['GET'])
+def get_all_substages():
+    """
+    Retrieve all substages for all stages from the database.
+
+    Returns:
+        flask.Response: JSON response with all substages.
+    """
+    try:
+        substages = query_db('SELECT * FROM SubStage')
+        return jsonify([{
+            'stage': row[3],
+            'substagename': row[0],
+            'substagedesc': row[1],
+            'exemplar': row[2]
+        } for row in substages])
+    except sqlite3.Error as e:
+        logger.error(f"Error retrieving all substages data: {e}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    logger.info("Starting the application...")
+    if 'WEBSITE_HOSTNAME' in os.environ:
+        logger.info("Running on Azure...")
+        app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    else:
+        logger.info("Running locally in debug mode...")
+        app.run(debug=True)

@@ -2,98 +2,133 @@
 
 ## Overview
 
-This project provides a beautiful and interactive graphical visualization of the research data lifecycle. The visualization is created using D3.js and served by a Flask API. The lifecycle stages, substages, and tools are stored in an SQLite database.
+This project provides an interactive visualization of the Research Data Lifecycle. It uses a Flask backend to serve data from a SQLite database and a React frontend to render the visualization using React Flow.
 
 ## Features
 
-- Visualization of research data lifecycle stages
-- Interactive exploration of substages and tools
-- Backend API to serve lifecycle data
+- Interactive visualization of research data lifecycle stages
+- Automatic layout calculation based on stage connections
+- Responsive design that adapts to different screen sizes
+- API endpoints for lifecycle stages, connections, substages, and tools
 
-## Author
+## Technologies Used
 
-Adam Vials Moore
-
-## Date
-
-19 July 2024
+- Backend:
+  - Python 3.9+
+  - Flask
+  - SQLite
+- Frontend:
+  - React
+  - React Flow
+  - Dagre (for layout calculation)
 
 ## Prerequisites
 
-- Python 3.x
-- pip (Python package installer)
-- SQLite
+- Python 3.9 or higher
+- Node.js 14 or higher
+- npm (usually comes with Node.js)
 
 ## Installation
 
 1. Clone the repository:
+   ```
+   git clone https://github.com/your-username/research-data-lifecycle.git
+   cd research-data-lifecycle
+   ```
 
-```sh
-git clone https://github.com/yourusername/research-data-lifecycle.git
-cd research-data-lifecycle
-```
+2. Set up the Python virtual environment and install dependencies:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+   pip install -r requirements.txt
+   ```
 
-2. Set up a virtual environment (optional but recommended):
+3. Install Node.js dependencies:
+   ```
+   npm install
+   ```
 
-```sh
-python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-```
+4. Build the React app:
+   ```
+   npm run build
+   ```
 
-3. Install the required packages:
+## Database Setup
 
-```sh
-pip install -r requirements.txt
-```
+The project uses a SQLite database. You need to set up the database with the required tables:
 
-4. Set up the database:
+1. Create a new SQLite database file named `lifecycle.db` in the project root.
 
-```sh
-python database_setup.py
-```
+2. Use the following SQL commands to create the necessary tables:
+
+   ```sql
+   CREATE TABLE LifeCycle (
+     id INTEGER PRIMARY KEY,
+     name TEXT NOT NULL
+   );
+
+   CREATE TABLE CycleConnects (
+     from_stage INTEGER,
+     to_stage INTEGER,
+     FOREIGN KEY (from_stage) REFERENCES LifeCycle(id),
+     FOREIGN KEY (to_stage) REFERENCES LifeCycle(id)
+   );
+
+   CREATE TABLE SubStage (
+     id INTEGER PRIMARY KEY,
+     stage INTEGER,
+     name TEXT NOT NULL,
+     FOREIGN KEY (stage) REFERENCES LifeCycle(id)
+   );
+
+   CREATE TABLE Tools (
+     id INTEGER PRIMARY KEY,
+     stage INTEGER,
+     name TEXT NOT NULL,
+     FOREIGN KEY (stage) REFERENCES LifeCycle(id)
+   );
+   ```
+
+3. Populate the tables with your research lifecycle data.
 
 ## Running the Application
 
-1. Start the Flask server:
+1. Ensure you're in the project directory and your virtual environment is activated.
 
-```sh
-python app.py
-```
+2. Start the Flask server:
+   ```
+   python app.py
+   ```
 
-2. Open a web browser and navigate to `http://127.0.0.1:5000` to view the visualization.
+3. The application should now be running. Open a web browser and navigate to `http://localhost:5000` to view the visualization.
+
+## API Endpoints
+
+- `/api/lifecycle`: Returns all lifecycle stages
+- `/api/connections`: Returns all connections between stages
+- `/api/substages/<stage>`: Returns substages for a given stage
+- `/api/tools/<stage>`: Returns tools for a given stage
 
 ## Deployment
 
-To deploy the application on Azure, follow these steps:
+This application is designed to be deployed on Azure. Follow these steps for deployment:
 
 1. Create an Azure App Service.
-2. Deploy your Flask application using the Azure CLI or Azure Portal.
+2. Set up a deployment pipeline using Azure Pipelines or GitHub Actions.
+3. Configure the App Service to use Python 3.9 and set the startup command to:
+   ```
+   gunicorn --bind=0.0.0.0 --timeout 600 app:app
+   ```
+4. Ensure that your database connection string is properly configured in the App Service's configuration settings.
 
-## Project Structure
+## Contributing
 
-```
-.
-├── app.py                # Flask API
-├── database_setup.py     # Script to set up the SQLite database
-├── index.html            # D3.js frontend visualization
-├── requirements.txt      # Python dependencies
-└── README.md             # Project documentation
-```
+Contributions to this project are welcome. Please fork the repository and submit a pull request with your changes.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-```
+[MIT License](LICENSE)
 
-### Next Steps
+## Contact
 
-1. **Add the License**: If you want to include a license, create a `LICENSE` file and specify your preferred license.
-2. **Push to Git**: Commit your changes and push them to your Git repository.
-
-```sh
-git add .
-git commit -m "Initial commit"
-git push origin main
-```
-
-Your project is now ready to be shared and deployed!
+For any queries or support, please contact [Your Name] at [your.email@example.com].

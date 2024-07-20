@@ -45,6 +45,11 @@
     ]
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/public" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="app" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="maldreth-lf" />
@@ -101,12 +106,21 @@
       <option name="project" value="LOCAL" />
       <updated>1721349858686</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="third version&#10; &#10;Display Only Unique Substages: Filtered out duplicate substages.&#10;Arrange Substages Pointing Outward: Improved substage layout to prevent overlap and ensured they point outward.&#10;Show Exemplars Only on Substage Click: Initially hid exemplars and showed them only when a substage is clicked.&#10;Tooltips for Substages: Added tooltips to display descriptions for substages.&#10;Fix Alternative Connections: Ensured alternative connections are displayed correctly with dotted lines.">
+      <option name="closed" value="true" />
+      <created>1721350553803</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1721350553803</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="first version - renders only stages but api is working" />
     <MESSAGE value="second version&#10; &#10;Responsive Layout for Stage Names: Adjusted the text positioning to ensure stage names fit inside the nodes.&#10;Separated Substages: Improved substage layout to prevent overlap by positioning them in a smaller circle around the clicked stage.&#10;Tooltips for Descriptions: Added tooltips to display descriptions on hover, ensuring they are well-formatted and legible.&#10;Rectangular Nodes: Ensured rectangular nodes with stage names inside." />
-    <option name="LAST_COMMIT_MESSAGE" value="second version&#10; &#10;Responsive Layout for Stage Names: Adjusted the text positioning to ensure stage names fit inside the nodes.&#10;Separated Substages: Improved substage layout to prevent overlap by positioning them in a smaller circle around the clicked stage.&#10;Tooltips for Descriptions: Added tooltips to display descriptions on hover, ensuring they are well-formatted and legible.&#10;Rectangular Nodes: Ensured rectangular nodes with stage names inside." />
+    <MESSAGE value="third version&#10; &#10;Display Only Unique Substages: Filtered out duplicate substages.&#10;Arrange Substages Pointing Outward: Improved substage layout to prevent overlap and ensured they point outward.&#10;Show Exemplars Only on Substage Click: Initially hid exemplars and showed them only when a substage is clicked.&#10;Tooltips for Substages: Added tooltips to display descriptions for substages.&#10;Fix Alternative Connections: Ensured alternative connections are displayed correctly with dotted lines." />
+    <option name="LAST_COMMIT_MESSAGE" value="third version&#10; &#10;Display Only Unique Substages: Filtered out duplicate substages.&#10;Arrange Substages Pointing Outward: Improved substage layout to prevent overlap and ensured they point outward.&#10;Show Exemplars Only on Substage Click: Initially hid exemplars and showed them only when a substage is clicked.&#10;Tooltips for Substages: Added tooltips to display descriptions for substages.&#10;Fix Alternative Connections: Ensured alternative connections are displayed correctly with dotted lines." />
   </component>
 </project>
